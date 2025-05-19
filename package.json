@@ -1,0 +1,15 @@
+{
+  "name": "happy-proxy-v2",
+  "version": "1.0.0",
+  "description": "Mock service using MSW",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "start": "node src/server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "msw": "^2.2.3",
+    "node-fetch": "^3.3.2"
+  }
+}
