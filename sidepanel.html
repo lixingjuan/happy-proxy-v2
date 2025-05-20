@@ -158,8 +158,36 @@
     }
     #editResponseData {
       flex: 1;
-      font-family: monospace;
+      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace;
+      font-size: 14px;
+      line-height: 1.5;
+      padding: 12px;
+      background: #f8f9fa;
+      border: 1px solid #ddd;
+      border-radius: 4px;
       resize: none;
+      tab-size: 2;
+    }
+    .format-btn {
+      background: #2196F3;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-top: 8px;
+    }
+    .format-btn:hover {
+      background: #1976D2;
+    }
+    .error-message {
+      color: #ff4444;
+      font-size: 12px;
+      margin-top: 4px;
+      display: none;
+    }
+    .error-message.visible {
+      display: block;
     }
   </style>
 </head>
@@ -186,6 +214,8 @@
       <div class="edit-form">
         <div class="edit-url" id="editUrl"></div>
         <textarea id="editResponseData" placeholder="响应数据"></textarea>
+        <div class="error-message" id="jsonError"></div>
+        <button class="format-btn" id="formatJson">格式化 JSON</button>
         <button id="saveEdit">保存修改</button>
       </div>
     </div>

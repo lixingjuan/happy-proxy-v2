@@ -8,8 +8,36 @@ document.addEventListener('DOMContentLoaded', () => {
   const editUrl = document.getElementById('editUrl');
   const editResponseData = document.getElementById('editResponseData');
   const saveEditButton = document.getElementById('saveEdit');
+  const formatJsonButton = document.getElementById('formatJson');
+  const jsonError = document.getElementById('jsonError');
 
   let currentEditingRule = null;
+
+  // 格式化 JSON
+  function formatJSON() {
+    try {
+      const value = editResponseData.value;
+      const formatted = JSON.stringify(JSON.parse(value), null, 2);
+      editResponseData.value = formatted;
+      jsonError.classList.remove('visible');
+    } catch (e) {
+      jsonError.textContent = '无效的 JSON 格式：' + e.message;
+      jsonError.classList.add('visible');
+    }
+  }
+
+  // 验证 JSON
+  function validateJSON(text) {
+    try {
+      JSON.parse(text);
+      jsonError.classList.remove('visible');
+      return true;
+    } catch (e) {
+      jsonError.textContent = '无效的 JSON 格式：' + e.message;
+      jsonError.classList.add('visible');
+      return false;
+    }
+  }
 
   // 加载现有规则
   function loadRules() {
@@ -99,6 +127,7 @@ document.addEventListener('DOMContentLoaded', () => {
     currentEditingRule = rule;
     editUrl.textContent = rule.urlPattern;
     editResponseData.value = rule.responseData;
+    jsonError.classList.remove('visible');
     editModal.classList.add('active');
   }
 
@@ -107,6 +136,7 @@ document.addEventListener('DOMContentLoaded', () => {
     editModal.classList.remove('active');
     currentEditingRule = null;
     editResponseData.value = '';
+    jsonError.classList.remove('visible');
   }
 
   // 保存编辑
@@ -117,6 +147,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!newResponseData) {
       alert('请填写响应数据');
       return;
+    }
+
+    if (!validateJSON(newResponseData)) {
+      if (!confirm('JSON 格式无效，是否仍要保存？')) {
+        return;
+      }
     }
 
     chrome.runtime.sendMessage({
@@ -142,6 +178,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!urlPattern || !responseData) {
       alert('请填写完整的规则信息');
       return;
+    }
+
+    if (!validateJSON(responseData)) {
+      if (!confirm('JSON 格式无效，是否仍要保存？')) {
+        return;
+      }
     }
 
     console.log('Adding new rule:', { urlPattern, responseData });
@@ -200,6 +242,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // 事件监听
   closeEditModal.addEventListener('click', closeModal);
   saveEditButton.addEventListener('click', saveEdit);
+  formatJsonButton.addEventListener('click', formatJSON);
   editModal.addEventListener('click', (e) => {
     if (e.target === editModal) {
       closeModal();
