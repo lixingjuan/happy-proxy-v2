@@ -12,30 +12,57 @@ document.addEventListener('DOMContentLoaded', () => {
   const jsonError = document.getElementById('jsonError');
 
   let currentEditingRule = null;
+  let editor = null;
+
+  // 初始化 CodeMirror 编辑器
+  function initEditor() {
+    editor = CodeMirror.fromTextArea(editResponseData, {
+      mode: 'application/json',
+      theme: 'monokai',
+      lineNumbers: true,
+      autoCloseBrackets: true,
+      matchBrackets: true,
+      indentUnit: 2,
+      tabSize: 2,
+      lineWrapping: true,
+      foldGutter: true,
+      gutters: ['CodeMirror-linenumbers', 'CodeMirror-foldgutter'],
+      extraKeys: {
+        'Ctrl-Space': 'autocomplete',
+        'Ctrl-/': 'toggleComment',
+        'Ctrl-F': 'findPersistent',
+        'Ctrl-H': 'replace',
+        'Ctrl-Z': 'undo',
+        'Ctrl-Y': 'redo',
+        'Ctrl-A': 'selectAll',
+        'Ctrl-S': function(cm) {
+          saveEdit();
+        }
+      }
+    });
+
+    // 添加错误检查
+    editor.on('change', function() {
+      try {
+        JSON.parse(editor.getValue());
+        jsonError.classList.remove('visible');
+      } catch (e) {
+        jsonError.textContent = '无效的 JSON 格式：' + e.message;
+        jsonError.classList.add('visible');
+      }
+    });
+  }
 
   // 格式化 JSON
   function formatJSON() {
     try {
-      const value = editResponseData.value;
+      const value = editor.getValue();
       const formatted = JSON.stringify(JSON.parse(value), null, 2);
-      editResponseData.value = formatted;
+      editor.setValue(formatted);
       jsonError.classList.remove('visible');
     } catch (e) {
       jsonError.textContent = '无效的 JSON 格式：' + e.message;
       jsonError.classList.add('visible');
-    }
-  }
-
-  // 验证 JSON
-  function validateJSON(text) {
-    try {
-      JSON.parse(text);
-      jsonError.classList.remove('visible');
-      return true;
-    } catch (e) {
-      jsonError.textContent = '无效的 JSON 格式：' + e.message;
-      jsonError.classList.add('visible');
-      return false;
     }
   }
 
@@ -126,30 +153,37 @@ document.addEventListener('DOMContentLoaded', () => {
   function openEditModal(rule) {
     currentEditingRule = rule;
     editUrl.textContent = rule.urlPattern;
-    editResponseData.value = rule.responseData;
-    jsonError.classList.remove('visible');
+    if (!editor) {
+      initEditor();
+    }
+    editor.setValue(rule.responseData);
     editModal.classList.add('active');
+    editor.refresh();
   }
 
   // 关闭编辑弹窗
   function closeModal() {
     editModal.classList.remove('active');
     currentEditingRule = null;
-    editResponseData.value = '';
-    jsonError.classList.remove('visible');
+    if (editor) {
+      editor.setValue('');
+    }
   }
 
   // 保存编辑
   function saveEdit() {
     if (!currentEditingRule) return;
 
-    const newResponseData = editResponseData.value.trim();
+    const newResponseData = editor.getValue().trim();
     if (!newResponseData) {
       alert('请填写响应数据');
       return;
     }
 
-    if (!validateJSON(newResponseData)) {
+    try {
+      // 验证 JSON 格式
+      JSON.parse(newResponseData);
+    } catch (e) {
       if (!confirm('JSON 格式无效，是否仍要保存？')) {
         return;
       }
@@ -180,7 +214,10 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    if (!validateJSON(responseData)) {
+    try {
+      // 验证 JSON 格式
+      JSON.parse(responseData);
+    } catch (e) {
       if (!confirm('JSON 格式无效，是否仍要保存？')) {
         return;
       }
@@ -252,3 +289,5 @@ document.addEventListener('DOMContentLoaded', () => {
   // 初始加载规则
   loadRules();
 }); 
+
+

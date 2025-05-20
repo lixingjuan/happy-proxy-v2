@@ -2,6 +2,10 @@
 <html>
 <head>
   <meta charset="UTF-8">
+  <link rel="stylesheet" href="lib/codemirror/codemirror.css">
+  <link rel="stylesheet" href="lib/codemirror/theme/monokai.css">
+  <script src="lib/codemirror/codemirror.js"></script>
+  <script src="lib/codemirror/mode/javascript/javascript.js"></script>
   <style>
     body {
       width: 100%;
@@ -156,17 +160,13 @@
       font-size: 14px;
       word-break: break-all;
     }
-    #editResponseData {
+    .CodeMirror {
       flex: 1;
-      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace;
-      font-size: 14px;
-      line-height: 1.5;
-      padding: 12px;
-      background: #f8f9fa;
+      height: auto !important;
       border: 1px solid #ddd;
       border-radius: 4px;
-      resize: none;
-      tab-size: 2;
+      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace;
+      font-size: 14px;
     }
     .format-btn {
       background: #2196F3;
