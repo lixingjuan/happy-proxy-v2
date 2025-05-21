@@ -373,7 +373,7 @@ async function removeRule(ruleId) {
   console.log('Rule removed successfully:', ruleId);
 }
 
-const shouldClearOldData = true
+const shouldClearOldData = false
 // 初始化
 chrome.runtime.onInstalled.addListener(async () => {
   try {
