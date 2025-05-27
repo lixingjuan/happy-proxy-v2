@@ -1,11 +1,13 @@
 document.addEventListener('DOMContentLoaded', () => {
   const urlPatternInput = document.getElementById('urlPattern');
+  const ruleTagInput = document.getElementById('ruleTag');
   const responseDataInput = document.getElementById('responseData');
   const addRuleButton = document.getElementById('addRule');
   const ruleList = document.getElementById('ruleList');
   const editModal = document.getElementById('editModal');
   const closeEditModal = document.getElementById('closeEditModal');
   const editUrl = document.getElementById('editUrl');
+  const editTag = document.getElementById('editTag');
   const editResponseData = document.getElementById('editResponseData');
   const saveEditButton = document.getElementById('saveEdit');
   const formatJsonButton = document.getElementById('formatJson');
@@ -91,6 +93,13 @@ document.addEventListener('DOMContentLoaded', () => {
       urlElement.className = 'rule-url';
       urlElement.textContent = rule.urlPattern;
       
+      if (rule.tag) {
+        const tagElement = document.createElement('span');
+        tagElement.className = 'rule-tag';
+        tagElement.textContent = rule.tag;
+        urlElement.appendChild(tagElement);
+      }
+      
       const responseElement = document.createElement('div');
       responseElement.className = 'rule-response';
       responseElement.textContent = rule.responseData;
@@ -153,6 +162,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function openEditModal(rule) {
     currentEditingRule = rule;
     editUrl.textContent = rule.urlPattern;
+    editTag.value = rule.tag || '';
     if (!editor) {
       initEditor();
     }
@@ -168,6 +178,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (editor) {
       editor.setValue('');
     }
+    editTag.value = '';
   }
 
   // 保存编辑
@@ -175,6 +186,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!currentEditingRule) return;
 
     const newResponseData = editor.getValue().trim();
+    const newTag = editTag.value.trim();
+    
     if (!newResponseData) {
       alert('请填写响应数据');
       return;
@@ -192,7 +205,8 @@ document.addEventListener('DOMContentLoaded', () => {
     chrome.runtime.sendMessage({
       type: 'UPDATE_RULE',
       ruleId: currentEditingRule.id,
-      responseData: newResponseData
+      responseData: newResponseData,
+      tag: newTag
     }, (response) => {
       console.log('Update rule response:', response);
       if (response && response.success) {
@@ -207,6 +221,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // 添加规则按钮点击事件
   addRuleButton.addEventListener('click', () => {
     const urlPattern = urlPatternInput.value.trim();
+    const tag = ruleTagInput.value.trim();
     const responseData = responseDataInput.value.trim();
 
     if (!urlPattern || !responseData) {
@@ -223,18 +238,20 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
-    console.log('Adding new rule:', { urlPattern, responseData });
+    console.log('Adding new rule:', { urlPattern, tag, responseData });
 
     chrome.runtime.sendMessage({
       type: 'ADD_RULE',
       rule: {
         urlPattern,
+        tag,
         responseData
       }
     }, (response) => {
       console.log('Add rule response:', response);
       if (response && response.success) {
         urlPatternInput.value = '';
+        ruleTagInput.value = '';
         responseDataInput.value = '';
         loadRules();
       } else {

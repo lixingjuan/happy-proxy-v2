@@ -138,7 +138,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     return true; // 保持消息通道开放
   }
   else if (request.type === 'UPDATE_RULE') {
-    updateRule(request.ruleId, request.responseData)
+    updateRule(request.ruleId, request.responseData, request.tag)
       .then(() => {
         console.log('Rule updated successfully, sending response');
         sendResponse({ success: true });
@@ -240,7 +240,8 @@ async function addRule(rule) {
     id: ruleId,
     urlPattern: rule.urlPattern,
     responseData: compressedResponse,
-    enabled: rule.enabled !== false // 默认 true
+    enabled: rule.enabled !== false, // 默认 true
+    tag: rule.tag || '' // 添加 tag 字段
   };
 
   // 保存到 IndexedDB
@@ -300,58 +301,54 @@ async function toggleRuleEnabled(ruleId, enabled) {
 }
 
 // 更新规则
-async function updateRule(ruleId, newResponseData) {
-  console.log('Updating rule:', ruleId, 'with new response:', newResponseData);
+async function updateRule(ruleId, newResponseData, newTag) {
+  console.log('Updating rule:', { ruleId, newResponseData, newTag });
+  
+  // 获取现有规则
+  const rules = await getAllRules();
+  const rule = rules.find(r => r.id === ruleId);
+  
+  if (!rule) {
+    throw new Error('Rule not found');
+  }
 
   // 压缩响应数据
   const compressedResponse = compressResponseData(newResponseData);
 
-  // 获取所有规则
-  const rules = await getAllRules();
-  
-  // 查找要更新的规则
-  const ruleToUpdate = rules.find(rule => rule.id === ruleId);
-  if (!ruleToUpdate) {
-    throw new Error('Rule not found');
-  }
-
-  // 更新规则
+  // 更新规则对象
   const updatedRule = {
-    ...ruleToUpdate,
-    responseData: compressedResponse
+    ...rule,
+    responseData: compressedResponse,
+    tag: newTag
   };
 
   // 保存到 IndexedDB
   await saveRule(updatedRule);
   
-  // 更新 Chrome 的规则系统
-  const newRule = {
-    id: ruleId,
-    priority: 1,
-    action: {
-      type: 'redirect',
-      redirect: {
-        url: `data:application/json,${encodeURIComponent(compressedResponse)}`
+  // 如果规则是启用的，更新 Chrome 的规则系统
+  if (rule.enabled) {
+    // 创建新的规则对象
+    const chromeRule = {
+      id: ruleId,
+      priority: 1,
+      action: {
+        type: 'redirect',
+        redirect: {
+          url: `data:application/json,${encodeURIComponent(compressedResponse)}`
+        }
+      },
+      condition: {
+        urlFilter: rule.urlPattern,
+        resourceTypes: ['main_frame', 'sub_frame', 'xmlhttprequest', 'other']
       }
-    },
-    condition: {
-      urlFilter: updatedRule.urlPattern,
-      resourceTypes: ['main_frame', 'sub_frame', 'xmlhttprequest', 'other']
-    }
-  };
+    };
 
-  await chrome.declarativeNetRequest.updateDynamicRules({
-    removeRuleIds: [ruleId],
-    addRules: [newRule]
-  });
-
-  // 更新内存中的规则列表
-  const customRuleIndex = customRules.findIndex(rule => rule.id === ruleId);
-  if (customRuleIndex !== -1) {
-    customRules[customRuleIndex] = updatedRule;
+    // 更新规则
+    await chrome.declarativeNetRequest.updateDynamicRules({
+      removeRuleIds: [ruleId],
+      addRules: [chromeRule]
+    });
   }
-
-  console.log('Rule updated successfully:', ruleId);
 }
 
 // 移除规则
