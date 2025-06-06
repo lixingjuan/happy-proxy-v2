@@ -96,6 +96,22 @@ async function deleteRule(ruleId) {
   });
 }
 
+// 更新扩展图标上的规则数量
+async function updateExtensionIcon() {
+  const rules = await getAllRules();
+  const enabledRulesCount = rules.filter(rule => rule.enabled !== false).length;
+  
+  // 设置图标上的文字
+  await chrome.action.setBadgeText({
+    text: enabledRulesCount > 0 ? enabledRulesCount.toString() : ''
+  });
+  
+  // 设置图标文字的背景色
+  await chrome.action.setBadgeBackgroundColor({
+    color: '#4CAF50'
+  });
+}
+
 // 监听来自 popup 的消息
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   console.log('Background received message:', request);
@@ -104,6 +120,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     addRule(request.rule)
       .then(() => {
         console.log('Rule added successfully, sending response');
+        updateExtensionIcon(); // 更新图标
         sendResponse({ success: true });
       })
       .catch((error) => {
@@ -129,6 +146,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     removeRule(request.ruleId)
       .then(() => {
         console.log('Rule removed successfully, sending response');
+        updateExtensionIcon(); // 更新图标
         sendResponse({ success: true });
       })
       .catch((error) => {
@@ -152,6 +170,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   else if (request.type === 'TOGGLE_RULE_ENABLED') {
     toggleRuleEnabled(request.ruleId, request.enabled)
       .then(() => {
+        updateExtensionIcon(); // 更新图标
         sendResponse({ success: true });
       })
       .catch((error) => {
@@ -405,7 +424,8 @@ chrome.runtime.onInstalled.addListener(async () => {
       nextRuleId = 1000;
     }
 
- 
+    // 初始化图标
+    await updateExtensionIcon();
     
     console.log('Extension initialized successfully');
   } catch (error) {
