@@ -12,9 +12,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const saveEditButton = document.getElementById('saveEdit');
   const formatJsonButton = document.getElementById('formatJson');
   const jsonError = document.getElementById('jsonError');
+  const searchInput = document.getElementById('searchInput');
 
   let currentEditingRule = null;
   let editor = null;
+  let allRules = []; // 存储所有规则
 
   // 初始化 CodeMirror 编辑器
   function initEditor() {
@@ -73,6 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
     chrome.runtime.sendMessage({ type: 'GET_RULES' }, (response) => {
       console.log('Received rules response:', response);
       if (response && response.rules) {
+        allRules = response.rules; // 更新 allRules
         displayRules(response.rules);
       }
     });
@@ -301,6 +304,17 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.target === editModal) {
       closeModal();
     }
+  });
+
+  // 添加搜索监听器
+  searchInput.addEventListener('input', (e) => {
+    const searchTerm = e.target.value.toLowerCase();
+    const filteredRules = allRules.filter(rule => {
+      return rule.urlPattern.toLowerCase().includes(searchTerm) ||
+             (rule.tag && rule.tag.toLowerCase().includes(searchTerm)) ||
+             rule.responseData.toLowerCase().includes(searchTerm);
+    });
+    displayRules(filteredRules);
   });
 
   // 初始加载规则

@@ -25,6 +25,22 @@
       gap: 16px;
       height: 100%;
     }
+    .search-container {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .search-input {
+      flex: 1;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    .search-input:focus {
+      outline: none;
+      border-color: #2196F3;
+    }
     .rule-list {
       flex: 1;
       overflow-y: auto;
@@ -229,6 +245,9 @@
 </head>
 <body>
   <div class="container">
+    <div class="search-container">
+      <input type="text" id="searchInput" placeholder="搜索规则" class="search-input">
+    </div>
     <div class="rule-list" id="ruleList">
       <!-- 规则列表将通过 JavaScript 动态添加 -->
     </div>
