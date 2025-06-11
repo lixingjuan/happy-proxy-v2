@@ -330,82 +330,121 @@ document.addEventListener('DOMContentLoaded', () => {
   function displayRules(rules) {
     console.log('Displaying rules:', rules);
     ruleList.innerHTML = '';
-    rules.forEach(rule => {
-      const ruleElement = document.createElement('div');
-      ruleElement.className = 'rule-item';
-      
-      const ruleInfo = document.createElement('div');
-      ruleInfo.className = 'rule-info';
-      
-      const urlElement = document.createElement('div');
-      urlElement.className = 'rule-url';
-      urlElement.textContent = rule.urlPattern;
-      
-      if (rule.tag) {
-        const tagElement = document.createElement('span');
-        tagElement.className = 'rule-tag';
-        tagElement.textContent = rule.tag;
-        urlElement.appendChild(tagElement);
-      }
-      
-      const responseElement = document.createElement('div');
-      responseElement.className = 'rule-response';
-      responseElement.textContent = rule.responseData;
-      
-      // 新增：启用开关
-      const toggleSwitch = document.createElement('label');
-      toggleSwitch.className = 'toggle-switch';
-      toggleSwitch.title = '启用/禁用此规则';
-      
-      const toggleInput = document.createElement('input');
-      toggleInput.type = 'checkbox';
-      toggleInput.checked = rule.enabled !== false;
-      toggleInput.onchange = () => {
-        chrome.runtime.sendMessage({
-          type: 'TOGGLE_RULE_ENABLED',
-          ruleId: rule.id,
-          enabled: toggleInput.checked
-        }, (response) => {
-          if (response && response.success) {
-            loadRules();
-          } else {
-            alert('切换规则状态失败：' + (response?.error || '未知错误'));
-            // 恢复原状态
-            toggleInput.checked = !toggleInput.checked;
-          }
-        });
-      };
-      
-      const toggleSlider = document.createElement('span');
-      toggleSlider.className = 'toggle-slider';
-      
-      toggleSwitch.appendChild(toggleInput);
-      toggleSwitch.appendChild(toggleSlider);
-      
-      const buttonGroup = document.createElement('div');
-      buttonGroup.className = 'button-group';
-      
-      const editButton = document.createElement('button');
-      editButton.className = 'edit-btn';
-      editButton.textContent = '编辑';
-      editButton.onclick = () => openEditModal(rule);
-      
-      const deleteButton = document.createElement('button');
-      deleteButton.className = 'delete-btn';
-      deleteButton.textContent = '删除';
-      deleteButton.onclick = () => removeRule(rule.id);
-      
-      buttonGroup.appendChild(toggleSwitch);
-      buttonGroup.appendChild(editButton);
-      buttonGroup.appendChild(deleteButton);
-      
-      ruleInfo.appendChild(urlElement);
-      ruleInfo.appendChild(responseElement);
-      ruleElement.appendChild(ruleInfo);
-      ruleElement.appendChild(buttonGroup);
-      
-      ruleList.appendChild(ruleElement);
-    });
+
+    // 将规则分为本地和远程两组
+    const localRules = rules.filter(rule => rule.urlPattern.toLowerCase().startsWith('http://localhost'));
+    const remoteRules = rules.filter(rule => !rule.urlPattern.toLowerCase().startsWith('http://localhost'));
+
+    // 显示远程规则
+    if (remoteRules.length > 0) {
+      const remoteHeader = document.createElement('div');
+      remoteHeader.className = 'rule-section-header';
+      remoteHeader.textContent = '远程规则';
+      ruleList.appendChild(remoteHeader);
+
+      remoteRules.forEach(rule => {
+        const ruleElement = createRuleElement(rule);
+        ruleList.appendChild(ruleElement);
+      });
+    }
+
+    // 如果有远程规则和本地规则，添加分隔线
+    if (remoteRules.length > 0 && localRules.length > 0) {
+      const divider = document.createElement('div');
+      divider.className = 'rule-divider';
+      ruleList.appendChild(divider);
+    }
+
+    // 显示本地规则
+    if (localRules.length > 0) {
+      const localHeader = document.createElement('div');
+      localHeader.className = 'rule-section-header';
+      localHeader.textContent = '本地规则';
+      ruleList.appendChild(localHeader);
+
+      localRules.forEach(rule => {
+        const ruleElement = createRuleElement(rule);
+        ruleList.appendChild(ruleElement);
+      });
+    }
+  }
+
+  // 创建规则元素
+  function createRuleElement(rule) {
+    const ruleElement = document.createElement('div');
+    ruleElement.className = 'rule-item';
+    
+    const ruleInfo = document.createElement('div');
+    ruleInfo.className = 'rule-info';
+    
+    const urlElement = document.createElement('div');
+    urlElement.className = 'rule-url';
+    urlElement.textContent = rule.urlPattern;
+    
+    if (rule.tag) {
+      const tagElement = document.createElement('span');
+      tagElement.className = 'rule-tag';
+      tagElement.textContent = rule.tag;
+      urlElement.appendChild(tagElement);
+    }
+    
+    const responseElement = document.createElement('div');
+    responseElement.className = 'rule-response';
+    responseElement.textContent = rule.responseData;
+    
+    // 新增：启用开关
+    const toggleSwitch = document.createElement('label');
+    toggleSwitch.className = 'toggle-switch';
+    toggleSwitch.title = '启用/禁用此规则';
+    
+    const toggleInput = document.createElement('input');
+    toggleInput.type = 'checkbox';
+    toggleInput.checked = rule.enabled !== false;
+    toggleInput.onchange = () => {
+      chrome.runtime.sendMessage({
+        type: 'TOGGLE_RULE_ENABLED',
+        ruleId: rule.id,
+        enabled: toggleInput.checked
+      }, (response) => {
+        if (response && response.success) {
+          loadRules();
+        } else {
+          alert('切换规则状态失败：' + (response?.error || '未知错误'));
+          // 恢复原状态
+          toggleInput.checked = !toggleInput.checked;
+        }
+      });
+    };
+    
+    const toggleSlider = document.createElement('span');
+    toggleSlider.className = 'toggle-slider';
+    
+    toggleSwitch.appendChild(toggleInput);
+    toggleSwitch.appendChild(toggleSlider);
+    
+    const buttonGroup = document.createElement('div');
+    buttonGroup.className = 'button-group';
+    
+    const editButton = document.createElement('button');
+    editButton.className = 'edit-btn';
+    editButton.textContent = '编辑';
+    editButton.onclick = () => openEditModal(rule);
+    
+    const deleteButton = document.createElement('button');
+    deleteButton.className = 'delete-btn';
+    deleteButton.textContent = '删除';
+    deleteButton.onclick = () => removeRule(rule.id);
+    
+    buttonGroup.appendChild(toggleSwitch);
+    buttonGroup.appendChild(editButton);
+    buttonGroup.appendChild(deleteButton);
+    
+    ruleInfo.appendChild(urlElement);
+    ruleInfo.appendChild(responseElement);
+    ruleElement.appendChild(ruleInfo);
+    ruleElement.appendChild(buttonGroup);
+    
+    return ruleElement;
   }
 
   // 打开编辑弹窗

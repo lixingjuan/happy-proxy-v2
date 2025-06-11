@@ -18,17 +18,24 @@
       padding: 16px;
       font-family: system-ui, -apple-system, sans-serif;
       box-sizing: border-box;
+      background-color: #fafafa;
     }
     .container {
       display: flex;
       flex-direction: column;
       gap: 16px;
       height: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
     }
     .search-container {
       display: flex;
       gap: 8px;
       align-items: center;
+      background: white;
+      padding: 12px;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
     .search-input {
       flex: 1;
@@ -44,16 +51,33 @@
     .rule-list {
       flex: 1;
       overflow-y: auto;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      padding: 8px;
+      background: white;
+      border-radius: 8px;
+      padding: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .rule-section-header {
+      padding: 8px 12px;
+      font-weight: 500;
+      color: #666;
+      margin: 8px 0;
+      font-size: 14px;
+    }
+    .rule-divider {
+      height: 1px;
+      background-color: #eee;
+      margin: 12px 0;
     }
     .rule-item {
-      padding: 8px;
+      padding: 12px;
       border-bottom: 1px solid #eee;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      transition: background-color 0.2s;
+    }
+    .rule-item:hover {
+      background-color: #fafafa;
     }
     .rule-item:last-child {
       border-bottom: none;
@@ -116,7 +140,14 @@
     .add-rule {
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 12px;
+      background: white;
+      padding: 16px;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .add-rule button {
+      align-self: flex-end;
     }
     input, textarea {
       padding: 8px;
