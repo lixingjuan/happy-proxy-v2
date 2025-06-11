@@ -148,6 +148,18 @@ document.addEventListener('DOMContentLoaded', () => {
               {line: line, ch: ch + query.length}
             );
             
+            // 添加自定义样式
+            cm.addOverlay({
+              token: function(stream) {
+                if (stream.string.indexOf(query, stream.pos) === stream.pos) {
+                  stream.pos += query.length;
+                  return "search-match";
+                }
+                stream.next();
+                return null;
+              }
+            });
+            
             // 滚动到选中区域
             cm.scrollIntoView({line: line, ch: ch}, 50);
             
@@ -213,6 +225,8 @@ document.addEventListener('DOMContentLoaded', () => {
       // 关闭对话框
       function closeDialog() {
         cm.getWrapperElement().removeChild(dialog);
+        // 移除搜索高亮
+        cm.removeOverlay();
       }
       
       // 绑定事件
