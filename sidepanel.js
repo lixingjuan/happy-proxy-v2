@@ -63,7 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
       dialog.style.position = 'absolute';
       dialog.style.top = '10px';
       dialog.style.right = '10px';
-      dialog.style.background = 'white';
+      dialog.style.background = 'rgba(255, 255, 255, 0.8)';
       dialog.style.padding = '8px';
       dialog.style.borderRadius = '4px';
       dialog.style.boxShadow = '0 2px 10px rgba(0,0,0,0.2)';
@@ -87,10 +87,10 @@ document.addEventListener('DOMContentLoaded', () => {
       searchButton.style.background = '#2196F3';
       searchButton.style.color = 'white';
       searchButton.style.border = 'none';
-      searchButton.style.padding = '4px 8px';
+      searchButton.style.padding = '2px 4px';
       searchButton.style.borderRadius = '4px';
       searchButton.style.cursor = 'pointer';
-      searchButton.style.fontSize = '14px';
+      searchButton.style.fontSize = '12px';
       
       // 创建下一个按钮
       var nextButton = document.createElement('button');
@@ -98,10 +98,10 @@ document.addEventListener('DOMContentLoaded', () => {
       nextButton.style.background = '#4CAF50';
       nextButton.style.color = 'white';
       nextButton.style.border = 'none';
-      nextButton.style.padding = '4px 8px';
+      nextButton.style.padding = '2px 4px';
       nextButton.style.borderRadius = '4px';
       nextButton.style.cursor = 'pointer';
-      nextButton.style.fontSize = '14px';
+      nextButton.style.fontSize = '12px';
       
       // 创建关闭按钮
       var closeButton = document.createElement('button');
