@@ -401,6 +401,7 @@ document.addEventListener('DOMContentLoaded', () => {
       initEditor();
     }
     editor.setValue(rule.responseData);
+    formatJSON(); // 自动格式化 JSON
     editModal.classList.add('active');
     editor.refresh();
   }
