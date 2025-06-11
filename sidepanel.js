@@ -34,13 +34,244 @@ document.addEventListener('DOMContentLoaded', () => {
       extraKeys: {
         'Ctrl-Space': 'autocomplete',
         'Ctrl-/': 'toggleComment',
-        'Ctrl-F': 'findPersistent',
-        'Ctrl-H': 'replace',
+        'Ctrl-F': function(cm) {
+          // 阻止浏览器默认的搜索行为
+          event.preventDefault();
+          event.stopPropagation();
+          editor.execCommand('findPersistent');
+        },
+        'Ctrl-H': function(cm) {
+          // 阻止浏览器默认的搜索行为
+          event.preventDefault();
+          event.stopPropagation();
+          editor.execCommand('replace');
+        },
         'Ctrl-Z': 'undo',
         'Ctrl-Y': 'redo',
         'Ctrl-A': 'selectAll',
         'Ctrl-S': function(cm) {
           saveEdit();
+        }
+      }
+    });
+
+    // 初始化搜索插件
+    CodeMirror.commands.findPersistent = function(cm) {
+      // 创建搜索对话框
+      var dialog = document.createElement('div');
+      dialog.className = 'CodeMirror-dialog';
+      dialog.style.position = 'absolute';
+      dialog.style.top = '10px';
+      dialog.style.right = '10px';
+      dialog.style.background = 'white';
+      dialog.style.padding = '8px';
+      dialog.style.borderRadius = '4px';
+      dialog.style.boxShadow = '0 2px 10px rgba(0,0,0,0.2)';
+      dialog.style.zIndex = '1000';
+      dialog.style.display = 'flex';
+      dialog.style.alignItems = 'center';
+      dialog.style.gap = '8px';
+      
+      // 创建搜索输入框
+      var input = document.createElement('input');
+      input.type = 'text';
+      input.style.width = '200px';
+      input.style.padding = '4px 8px';
+      input.style.border = '1px solid #ddd';
+      input.style.borderRadius = '4px';
+      input.style.fontSize = '14px';
+      
+      // 创建搜索按钮
+      var searchButton = document.createElement('button');
+      searchButton.textContent = '搜索';
+      searchButton.style.background = '#2196F3';
+      searchButton.style.color = 'white';
+      searchButton.style.border = 'none';
+      searchButton.style.padding = '4px 8px';
+      searchButton.style.borderRadius = '4px';
+      searchButton.style.cursor = 'pointer';
+      searchButton.style.fontSize = '14px';
+      
+      // 创建下一个按钮
+      var nextButton = document.createElement('button');
+      nextButton.textContent = '下一个';
+      nextButton.style.background = '#4CAF50';
+      nextButton.style.color = 'white';
+      nextButton.style.border = 'none';
+      nextButton.style.padding = '4px 8px';
+      nextButton.style.borderRadius = '4px';
+      nextButton.style.cursor = 'pointer';
+      nextButton.style.fontSize = '14px';
+      
+      // 创建关闭按钮
+      var closeButton = document.createElement('button');
+      closeButton.textContent = '×';
+      closeButton.style.background = 'none';
+      closeButton.style.border = 'none';
+      closeButton.style.color = '#666';
+      closeButton.style.fontSize = '18px';
+      closeButton.style.cursor = 'pointer';
+      closeButton.style.padding = '0 4px';
+      closeButton.style.marginLeft = '4px';
+      
+      // 添加到对话框
+      dialog.appendChild(input);
+      dialog.appendChild(searchButton);
+      dialog.appendChild(nextButton);
+      dialog.appendChild(closeButton);
+      
+      // 将对话框添加到编辑器容器中
+      cm.getWrapperElement().appendChild(dialog);
+      
+      // 聚焦输入框
+      input.focus();
+      
+      // 搜索函数
+      function search() {
+        var query = input.value;
+        if (!query) return;
+        
+        try {
+          // 获取当前编辑器内容
+          var content = cm.getValue();
+          var index = content.indexOf(query);
+          
+          if (index !== -1) {
+            // 计算行号和列号
+            var lines = content.substring(0, index).split('\n');
+            var line = lines.length - 1;
+            var ch = lines[lines.length - 1].length;
+            
+            // 设置选中区域
+            cm.setSelection(
+              {line: line, ch: ch},
+              {line: line, ch: ch + query.length}
+            );
+            
+            // 滚动到选中区域
+            cm.scrollIntoView({line: line, ch: ch}, 50);
+            
+            // 聚焦编辑器
+            cm.focus();
+          } else {
+            alert('没有找到匹配项');
+          }
+        } catch (e) {
+          console.error('Search error:', e);
+          alert('搜索出错：' + e.message);
+        }
+      }
+      
+      // 查找下一个匹配项
+      function findNext() {
+        var query = input.value;
+        if (!query) return;
+        
+        try {
+          // 获取当前选中区域
+          var selection = cm.getSelection();
+          var cursor = cm.getCursor();
+          
+          // 获取当前编辑器内容
+          var content = cm.getValue();
+          
+          // 从当前光标位置开始搜索
+          var searchStart = cm.indexFromPos(cursor);
+          var index = content.indexOf(query, searchStart + 1);
+          
+          if (index === -1) {
+            // 如果没找到，从头开始搜索
+            index = content.indexOf(query);
+          }
+          
+          if (index !== -1) {
+            // 计算行号和列号
+            var lines = content.substring(0, index).split('\n');
+            var line = lines.length - 1;
+            var ch = lines[lines.length - 1].length;
+            
+            // 设置选中区域
+            cm.setSelection(
+              {line: line, ch: ch},
+              {line: line, ch: ch + query.length}
+            );
+            
+            // 滚动到选中区域
+            cm.scrollIntoView({line: line, ch: ch}, 50);
+            
+            // 聚焦编辑器
+            cm.focus();
+          } else {
+            alert('没有找到更多匹配项');
+          }
+        } catch (e) {
+          console.error('Search error:', e);
+          alert('搜索出错：' + e.message);
+        }
+      }
+      
+      // 关闭对话框
+      function closeDialog() {
+        cm.getWrapperElement().removeChild(dialog);
+      }
+      
+      // 绑定事件
+      searchButton.onclick = function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        search();
+      };
+      
+      nextButton.onclick = function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        findNext();
+      };
+      
+      closeButton.onclick = function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        closeDialog();
+      };
+      
+      input.onkeyup = function(e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          e.stopPropagation();
+          search();
+        } else if (e.key === 'Escape') {
+          e.preventDefault();
+          e.stopPropagation();
+          closeDialog();
+        }
+      };
+    };
+
+    // 添加搜索按钮
+    const searchButton = document.createElement('button');
+    searchButton.textContent = '搜索 (⌘F)';
+    searchButton.className = 'format-btn';
+    searchButton.style.marginRight = '8px';
+    searchButton.onclick = function() {
+      editor.execCommand('findPersistent');
+    };
+    formatJsonButton.parentNode.insertBefore(searchButton, formatJsonButton);
+
+    // 添加全局快捷键监听
+    document.addEventListener('keydown', function(e) {
+      // 检查是否在编辑器中
+      if (document.activeElement === editor.getInputField()) {
+        // 如果按下 Cmd+F (Mac) 或 Ctrl+F (Windows/Linux)
+        if ((e.metaKey || e.ctrlKey) && e.key === 'f') {
+          e.preventDefault();
+          e.stopPropagation();
+          editor.execCommand('findPersistent');
+        }
+        // 如果按下 Cmd+H (Mac) 或 Ctrl+H (Windows/Linux)
+        else if ((e.metaKey || e.ctrlKey) && e.key === 'h') {
+          e.preventDefault();
+          e.stopPropagation();
+          editor.execCommand('replace');
         }
       }
     });

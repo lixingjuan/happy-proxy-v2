@@ -220,15 +220,17 @@
       font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace;
       font-size: 14px;
     }
+
     .format-btn {
       background: #2196F3;
       color: white;
       border: none;
-      padding: 8px 16px;
+      padding: 4px 8px;
       border-radius: 4px;
       cursor: pointer;
-      margin-top: 8px;
+      font-size: 12px;
     }
+
     .format-btn:hover {
       background: #1976D2;
     }
@@ -270,6 +272,7 @@
             <label>标签：</label>
             <input type="text" id="editTag" placeholder="选填" />
           </div>
+          <button class="format-btn" id="formatJson">格式化</button>
           <button class="close-btn" id="closeEditModal">&times;</button>
         </div>
       </div>
@@ -277,7 +280,6 @@
         <div class="edit-url" id="editUrl"></div>
         <textarea id="editResponseData" placeholder="响应数据"></textarea>
         <div class="error-message" id="jsonError"></div>
-        <button class="format-btn" id="formatJson">格式化 JSON</button>
         <button id="saveEdit">保存修改</button>
       </div>
     </div>
