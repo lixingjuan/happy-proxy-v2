@@ -353,32 +353,34 @@ document.addEventListener('DOMContentLoaded', () => {
       responseElement.textContent = rule.responseData;
       
       // 新增：启用开关
-      const enabledLabel = document.createElement('label');
-      enabledLabel.style.display = 'flex';
-      enabledLabel.style.alignItems = 'center';
-      enabledLabel.style.gap = '4px';
-      enabledLabel.style.marginRight = '8px';
-      const enabledCheckbox = document.createElement('input');
-      enabledCheckbox.type = 'checkbox';
-      enabledCheckbox.checked = rule.enabled !== false;
-      enabledCheckbox.title = '启用/禁用此规则';
-      enabledCheckbox.onchange = () => {
+      const toggleSwitch = document.createElement('label');
+      toggleSwitch.className = 'toggle-switch';
+      toggleSwitch.title = '启用/禁用此规则';
+      
+      const toggleInput = document.createElement('input');
+      toggleInput.type = 'checkbox';
+      toggleInput.checked = rule.enabled !== false;
+      toggleInput.onchange = () => {
         chrome.runtime.sendMessage({
           type: 'TOGGLE_RULE_ENABLED',
           ruleId: rule.id,
-          enabled: enabledCheckbox.checked
+          enabled: toggleInput.checked
         }, (response) => {
           if (response && response.success) {
             loadRules();
           } else {
             alert('切换规则状态失败：' + (response?.error || '未知错误'));
             // 恢复原状态
-            enabledCheckbox.checked = !enabledCheckbox.checked;
+            toggleInput.checked = !toggleInput.checked;
           }
         });
       };
-      enabledLabel.appendChild(enabledCheckbox);
-      enabledLabel.appendChild(document.createTextNode('启用'));
+      
+      const toggleSlider = document.createElement('span');
+      toggleSlider.className = 'toggle-slider';
+      
+      toggleSwitch.appendChild(toggleInput);
+      toggleSwitch.appendChild(toggleSlider);
       
       const buttonGroup = document.createElement('div');
       buttonGroup.className = 'button-group';
@@ -393,7 +395,7 @@ document.addEventListener('DOMContentLoaded', () => {
       deleteButton.textContent = '删除';
       deleteButton.onclick = () => removeRule(rule.id);
       
-      buttonGroup.appendChild(enabledLabel);
+      buttonGroup.appendChild(toggleSwitch);
       buttonGroup.appendChild(editButton);
       buttonGroup.appendChild(deleteButton);
       
